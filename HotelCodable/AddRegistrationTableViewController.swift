@@ -7,15 +7,19 @@ class AddRegistrationTableViewController: UITableViewController, SelectRoomTypeT
     @IBOutlet var lastNameTextField: UITextField!
     @IBOutlet var emailTextField: UITextField!
     @IBOutlet var checkInDateLabel: UILabel!
+    //New term or Type: UIDatePicker
     @IBOutlet var checkInDatePicker: UIDatePicker!
     @IBOutlet var checkOutDateLabel: UILabel!
     @IBOutlet var checkOutDatePicker: UIDatePicker!
     @IBOutlet var numberOfAdultsLabel: UILabel!
+    //New term or Type: UIStepper
     @IBOutlet var numberOfAdultsStepper: UIStepper!
     @IBOutlet var numberOfChildrenLabel: UILabel!
     @IBOutlet var numberOfChildrenStepper: UIStepper!
+    //New term or Type: UISwitch
     @IBOutlet var wifiSwitch: UISwitch!
     @IBOutlet var roomTypeLabel: UILabel!
+    //New term or Type: UIBarButtonItem
     @IBOutlet var doneBarButtonItem: UIBarButtonItem!
     
     // MARK: Charges Section Outlets
@@ -28,6 +32,8 @@ class AddRegistrationTableViewController: UITableViewController, SelectRoomTypeT
     @IBOutlet var chargesWifiDetailLabel: UILabel!
     @IBOutlet var chargesTotalLabel: UILabel!
     
+    
+    
     let checkInDateLabelCellIndexPath = IndexPath(row: 0, section: 1)
     //Here the picker
     let checkInDatePickerCellIndexPath = IndexPath(row: 1, section: 1)
@@ -36,29 +42,39 @@ class AddRegistrationTableViewController: UITableViewController, SelectRoomTypeT
     //Here the picker again
     let checkOutDatePickerCellIndexPath = IndexPath(row: 3, section: 1)
 
-    var isCheckInDatePickerVisible = false
-    //COMMENT IT OUT CAUSE IT STILL WORKS JUST FINE
-    //: Bool = false {
-       // didSet {
-//checkInDatePicker.isHidden = !isCheckInDatePickerVisible
-        //}
-   // }
     
-    var isCheckOutDatePickerVisible = false
-   // var isCheckOutDatePickerVisible: Bool = false {
-     //   didSet {
-         //   checkOutDatePicker.isHidden = !isCheckOutDatePickerVisible
-    //    }
-   // }
+    //ONLY THIS MAKES THE PICKER TO BE HIDDEN BUT BUGGY
+    //var isCheckInDatePickerVisible = false
+   // var isCheckOutDatePickerVisible = false
+
+    //This makes it smooth and to hide elegantly
+
+    var isCheckInDatePickerVisible : Bool = false {
+        didSet {
+            checkInDatePicker.isHidden = !isCheckInDatePickerVisible
+        }
+    }
+    
+    
+     var isCheckOutDatePickerVisible: Bool = false {
+       didSet {
+       checkOutDatePicker.isHidden = !isCheckOutDatePickerVisible
+        }
+    }
     
     var roomType: RoomType?
     
     var registration: Registration? {
         guard let roomType = roomType,
-              let firstName = firstNameTextField.text //unwraps the text field
-                , !firstName.isEmpty, // Checks if its not empty
-              let lastName = lastNameTextField.text,//unwraps the text field
-                !lastName.isEmpty // Checks if its not empty
+              //unwraps the text field + Var Shadowing
+              let firstName = firstNameTextField.text,
+                // Checks if its not empty
+                !firstName.isEmpty,
+              
+              //unwraps the text field + Var Shadowing
+              let lastName = lastNameTextField.text,
+              // Checks if its not empty
+                !lastName.isEmpty
         
         else { return nil } // it does not let to register anything till Name and Last name is set up
         
@@ -69,6 +85,7 @@ class AddRegistrationTableViewController: UITableViewController, SelectRoomTypeT
         let numberOfChildren = Int(numberOfChildrenStepper.value)
         let hasWifi = wifiSwitch.isOn
         
+        //Returning all the new registration variables stored in a single registration struct
         return Registration(firstName: firstName,
                             lastName: lastName,
                             emailAddress: email,
@@ -80,17 +97,19 @@ class AddRegistrationTableViewController: UITableViewController, SelectRoomTypeT
                             wifi: hasWifi)
     }
     
+    //It holds existing registration data if you’re editing; if it’s nil, you’re creating a new one.
     var existingRegistration: Registration?
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        //This will update everytime it loads...
+        // If there's an existing registration, we are in "edit/view" mode.
         if let existingRegistration = existingRegistration {
+            // Set the screen title to indicate we're viewing a guest registration.
             title = "View Guest Registration"
-            //DONE BUTTON starts disabled...
+            // Disable the Done button initially (possibly until some edits occur).
             doneBarButtonItem.isEnabled = false
-            
+            // Pre-fill the form fields with data from the existing registration.
             roomType = existingRegistration.roomType
             firstNameTextField.text = existingRegistration.firstName
             lastNameTextField.text = existingRegistration.lastName
@@ -101,14 +120,16 @@ class AddRegistrationTableViewController: UITableViewController, SelectRoomTypeT
             numberOfChildrenStepper.value = Double(existingRegistration.numberOfChildren)
             wifiSwitch.isOn = existingRegistration.wifi
         } else {
-            
+            // If no existing registration, configure the check-in date picker for a new registration.
             //MAKING IT MANAGEABLE TO PICK THE DATE AFTER TODAY, NOT BACKWARDS
             let midnightToday = Calendar.current.startOfDay(for: Date())
+            // Set the minimum check-in date to today.
             checkInDatePicker.minimumDate = midnightToday
+            // Set the default check-in date to today.
             checkInDatePicker.date = midnightToday
         }
 
-        //Activate the whole functions in the bottom
+        //Activate the whole functions from the bottom
         updateDateViews()
         updateNumberOfGuests()
         updateRoomType()
